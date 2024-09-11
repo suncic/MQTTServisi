@@ -29,7 +29,7 @@ namespace MQTTClient2
             }
             else
             {
-                Console.WriteLine($"Configuration file '{log4netConfigFile}' not found.");
+                log.Warn($"Configuration file '{log4netConfigFile}' not found.");
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace MQTTClient2
 
             mqttClient.ConnectionClosed += async (sender, e) =>
             {
-                Console.WriteLine("Connection closed.");
+                log.Info("Connection closed.");
                 await Konektovanje();
             };
 
