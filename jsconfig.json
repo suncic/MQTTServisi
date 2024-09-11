@@ -1,0 +1,9 @@
+{
+  "Mqtt": {
+    "Broker": "192.168.22.90",
+    "Port": 1883,
+    "Topic": "suncica/teme",
+    "Username": "suncica",
+    "Password": "suncica"
+  }
+}
