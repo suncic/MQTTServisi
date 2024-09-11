@@ -61,7 +61,7 @@ namespace MQTTClient2
                     if (!mqttClient.IsConnected)
                     {
                         mqttClient.Connect(Guid.NewGuid().ToString(), username, password);
-                        log.Info("Konekcija uspela");
+                        log.Info("Konekcija uspela!");
 
                         PubServis ps = new PubServis(mqttClient);
                         SubServis ss = new SubServis(mqttClient, log);
