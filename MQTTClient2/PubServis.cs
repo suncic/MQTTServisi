@@ -7,52 +7,58 @@ using System.Threading;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using System.Configuration;
+using System.IO;
 
 namespace MQTTClient2
 {
-    //saljem svoje publisovane teme 
-    // citasm iz fajla i publisujem
-
     internal class PubServis
     {
         private MqttClient client;
         private Thread t1 = null;
         private Thread t2 = null;
+        private readonly string file = @"C:\Users\student\git_demo\MQTTServisi\MQTTClient2\publish.txt";
 
         public PubServis(MqttClient client)
         {
             this.client = client;
-            this.t1 = new Thread(Ispis1);
-            this.t2 = new Thread(Ispis2);
+            this.t1 = new Thread(Ispis);
+            this.t2 = new Thread(Ispis);
             t1.Start();
             t2.Start();
         }
 
-        public void Ispis1()
+        private StringBuilder ForPublishing()
         {
-            string poruka = "Objavljena poruka od niti1 broj ";
-            int i = 0;
-            while (true)
+            StringBuilder sb = new StringBuilder(); ;
+            if (File.Exists(file))
             {
-                client.Publish(ConfigurationManager.AppSettings["topic1"], 
-                    Encoding.UTF8.GetBytes(poruka + i));
-                i++;
+                using (StreamReader sr = new StreamReader(file))
+                {
+                    int count = 0;
+                    string line = null;
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        sb.Append(line);
+                        count++;
+                    }
+                }
+            }
+
+            return sb;
+        }
+
+        private void Ispis()
+        {   
+            StringBuilder sb = ForPublishing();
+            int i = 0;
+            foreach (string s in sb)
+            {
+                i = Thread.CurrentThread.ManagedThreadId
+                client.Publish(ConfigurationManager.AppSettings["topic1"],
+                    Encoding.UTF8.GetBytes(s + " od niti " + i));
                 Thread.Sleep(1000);
             }
         }
-
-        public void Ispis2()
-        {
-            string poruka = "Objavljena poruka od niti2 broj ";
-            int i = 0;
-            while (true)
-            {
-                client.Publish(ConfigurationManager.AppSettings["topic1"], 
-                    Encoding.UTF8.GetBytes(poruka + i));
-                i++;
-                Thread.Sleep(1000);
-            }
-        }
-
     }
 }
