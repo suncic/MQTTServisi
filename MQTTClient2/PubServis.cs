@@ -11,6 +11,7 @@ using System.Configuration;
 namespace MQTTClient2
 {
     //saljem svoje publisovane teme 
+    // citasm iz fajla i publisujem
 
     internal class PubServis
     {

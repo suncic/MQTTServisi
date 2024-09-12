@@ -10,15 +10,19 @@ using log4net.Config;
 using log4net.Appender;
 using System.IO;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
+using static uPLibrary.Networking.M2Mqtt.MqttClient;
 
 namespace MQTTClient2
 {
     internal class Program
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(Program));
-        public static MqttClient mqttClient;
-        public static string username;
-        public static string password;
+        private static string broker = ConfigurationManager.AppSettings["Mqtt broker"];
+        private static int port = int.Parse(ConfigurationManager.AppSettings["port"]);
+        private static string username = ConfigurationManager.AppSettings["passwd"];
+        private static string password = ConfigurationManager.AppSettings["username"];
+        private static MqttClient mqttClient = new MqttClient("localhost", port, false, null,
+                null, MqttSslProtocols.TLSv1_2);
 
         static async Task Main(string[] args)
         {
@@ -33,26 +37,10 @@ namespace MQTTClient2
                 return;
             }
 
-            string broker = ConfigurationManager.AppSettings["Mqtt broker"];
-            int port = int.Parse(ConfigurationManager.AppSettings["port"]);
-            username = ConfigurationManager.AppSettings["username"];
-            password = ConfigurationManager.AppSettings["passwd"];
-
-            mqttClient = new MqttClient("localhost", port, false, null,
-                null, MqttSslProtocols.TLSv1_2);
-
-            mqttClient.ConnectionClosed += async (sender, e) =>
-            {
-                log.Info("Connection closed.");
-                await Konektovanje();
-            };
-
-            await Konektovanje();
-
-            Console.ReadLine();
+            await ConnectingToBroker();
         }
 
-        public static async Task Konektovanje()
+        public static async Task ConnectingToBroker()
         {
             while (true)
             {
@@ -69,16 +57,12 @@ namespace MQTTClient2
 
                     await Task.Delay(5000);
                 }
-                catch (MqttConnectionException ex)
+                catch (Exception ex) 
                 {
-                    log.Error("Failed to connect: " + ex.StackTrace);
+                    log.Error(ex.Message);
                     await Task.Delay(5000);
                 }
-                catch (MqttCommunicationException ex1)
-                {
-                    log.Error("Failed to connect: " + ex1.StackTrace);
-                    await Task.Delay(5000);
-                }
+                
             }
         }
     }

@@ -14,13 +14,14 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 namespace MQTTClient2
 {
     //dobijam teme na koje sam subscribe-ovana
+    //sve poruke koje dobijem pisem u fajl ciji je naziv vreme u koje je poslata poruka
 
     internal class SubServis
     {
-        MqttClient client;
-        ILog logger;
+        private MqttClient client;
+        private ILog logger;
         private DateTime dt;
-        private static HashSet<string> _messagesId = new HashSet<string>();
+        private HashSet<string> _messagesId;
 
         public DateTime Dt
         { 
@@ -33,6 +34,7 @@ namespace MQTTClient2
         {
             this.client = client;
             this.logger = logger;
+            this._messagesId = new HashSet<string>();
             client.Subscribe(new string[] { ConfigurationManager.AppSettings["topic2"] },
                 new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
@@ -40,6 +42,7 @@ namespace MQTTClient2
 
         private void Client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
+            _messagesId.Clear();
             dt = DateTime.UtcNow;
             string tema = e.Topic;
             string poruka = Encoding.UTF8.GetString(e.Message);
