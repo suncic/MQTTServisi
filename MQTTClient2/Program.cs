@@ -52,7 +52,7 @@ namespace MQTTClient2
                         log.Info("Konekcija uspela!");
 
                         PubServis ps = new PubServis(mqttClient);
-                        //SubServis ss = new SubServis(mqttClient, log);
+                        SubServis ss = new SubServis(mqttClient, log);
                     }
 
                     await Task.Delay(5000);

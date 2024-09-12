@@ -21,8 +21,13 @@ namespace MQTTClient2
         public PubServis(MqttClient client)
         {
             this.client = client;
+
             this.t1 = new Thread(Ispis);
+            t1.Name = "1";
+
             this.t2 = new Thread(Ispis);
+            t2.Name = "2";
+
             t1.Start();
             t2.Start();
         }
@@ -34,13 +39,11 @@ namespace MQTTClient2
             {
                 using (StreamReader sr = new StreamReader(file))
                 {
-                    int count = 0;
                     string line = null;
 
                     while ((line = sr.ReadLine()) != null)
                     {
-                        sb.Append(line);
-                        count++;
+                        sb.Append(line.Trim() + " ");
                     }
                 }
             }
@@ -51,13 +54,16 @@ namespace MQTTClient2
         private void Ispis()
         {   
             StringBuilder sb = ForPublishing();
-            int i = 0;
-            foreach (string s in sb)
+            string[] str = sb.ToString().Split(' ');
+
+            foreach (string s in str)
             {
-                i = Thread.CurrentThread.ManagedThreadId
-                client.Publish(ConfigurationManager.AppSettings["topic1"],
-                    Encoding.UTF8.GetBytes(s + " od niti " + i));
-                Thread.Sleep(1000);
+                if (!s.Equals(""))
+                {
+                    client.Publish(ConfigurationManager.AppSettings["topic1"],
+                        Encoding.UTF8.GetBytes(s + " od niti " + Thread.CurrentThread.Name));
+                    Thread.Sleep(1000);
+                }
             }
         }
     }

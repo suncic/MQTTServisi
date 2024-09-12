@@ -54,8 +54,8 @@ namespace MQTTClient2
             { 
                 _messagesId.Add(poruka);
 
-                string imef = dt.ToFileTime;
-                using (StreamWriter sw = new StreamWriter(rootFolder + imef))
+                string imef = rootFolder + dt.ToString("yyyy-MM-dd_HH-mm-ss");
+                using (StreamWriter sw = new StreamWriter(imef))
                 {
                     sw.WriteLine(poruka);
                 }
