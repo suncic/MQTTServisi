@@ -11,60 +11,25 @@ using System.IO;
 
 namespace MQTTClient2
 {
-    internal class PubServis
+    internal class PubServis : PubServiceInterface
     {
         private MqttClient client;
         private Thread t1 = null;
-        private Thread t2 = null;
-        private readonly string file = @"C:\Users\student\git_demo\MQTTServisi\MQTTClient2\publish.txt";
 
         public PubServis(MqttClient client)
         {
             this.client = client;
-
-            this.t1 = new Thread(Ispis);
-            t1.Name = "1";
-
-            this.t2 = new Thread(Ispis);
-            t2.Name = "2";
-
+            this.t1 = new Thread(Publish);
             t1.Start();
-            t2.Start();
         }
 
-        private StringBuilder ForPublishing()
+        public void Publish()
         {
-            StringBuilder sb = new StringBuilder(); ;
-            if (File.Exists(file))
-            {
-                using (StreamReader sr = new StreamReader(file))
-                {
-                    string line = null;
-
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        sb.Append(line.Trim() + " ");
-                    }
-                }
-            }
-
-            return sb;
+            Files f = new Files();
+            StringBuilder sb = f.GetText();
+            client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString())); 
+            //publishovati bez konvertovanja u bajove
         }
 
-        private void Ispis()
-        {   
-            StringBuilder sb = ForPublishing();
-            string[] str = sb.ToString().Split(' ');
-
-            foreach (string s in str)
-            {
-                if (!s.Equals(""))
-                {
-                    client.Publish(ConfigurationManager.AppSettings["topic1"],
-                        Encoding.UTF8.GetBytes(s + " od niti " + Thread.CurrentThread.Name));
-                    Thread.Sleep(1000);
-                }
-            }
-        }
     }
 }

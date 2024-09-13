@@ -11,33 +11,24 @@ using log4net.Appender;
 using System.IO;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
 using static uPLibrary.Networking.M2Mqtt.MqttClient;
+using static System.Net.WebRequestMethods;
 
 namespace MQTTClient2
 {
     internal class Program
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(Program));
-        private static string broker = ConfigurationManager.AppSettings["Mqtt broker"];
-        private static int port = int.Parse(ConfigurationManager.AppSettings["port"]);
-        private static string username = ConfigurationManager.AppSettings["passwd"];
-        private static string password = ConfigurationManager.AppSettings["username"];
-        private static MqttClient mqttClient = new MqttClient("localhost", port, false, null,
+        private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
+        private static PubServis pubServis = null;
+        private static SubServis subServis = null;
 
         static async Task Main(string[] args)
         {
-            var log4netConfigFile = "App1.config";
-            if (File.Exists(log4netConfigFile))
+            mqttClient.ConnectionClosed += async (sender, e) =>
             {
-                XmlConfigurator.Configure(new FileInfo(log4netConfigFile));
-            }
-            else
-            {
-                log.Warn($"Configuration file '{log4netConfigFile}' not found.");
-                return;
-            }
-
-            await ConnectingToBroker();
+                Log4net.log.Error("Connection closed!");
+                await ConnectingToBroker();
+            };
         }
 
         public static async Task ConnectingToBroker()
@@ -48,18 +39,25 @@ namespace MQTTClient2
                 {
                     if (!mqttClient.IsConnected)
                     {
-                        mqttClient.Connect(Guid.NewGuid().ToString(), username, password);
-                        log.Info("Konekcija uspela!");
+                        mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
+                        Log4net.log.Info("Connected successfully!");
 
-                        PubServis ps = new PubServis(mqttClient);
-                        SubServis ss = new SubServis(mqttClient, log);
+                        if (pubServis != null && subServis != null)
+                        {
+                            pubServis = new PubServis(mqttClient);
+                            subServis = new SubServis(mqttClient);
+                        }
+                    }
+                    else
+                    {
+                        Log4net.log.Info("Connection failed!");
                     }
 
                     await Task.Delay(5000);
                 }
                 catch (Exception ex) 
                 {
-                    log.Error(ex.Message);
+                    Log4net.log.Error("Connection failed! " + ex.StackTrace);
                     await Task.Delay(5000);
                 }
                 

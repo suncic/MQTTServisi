@@ -16,51 +16,40 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 namespace MQTTClient2
 { 
 
-    internal class SubServis
+    internal class SubServis : SubServiceInterface
     {
         private MqttClient client;
-        private ILog logger;
-        private DateTime dt;
-        private HashSet<string> _messagesId;
-        private readonly string rootFolder = @"C:\Users\student\git_demo\MQTTServisi\MQTTClient2\";
+        private DateTime lastMessage;
 
-        public DateTime Dt
+        public DateTime LastMessage
         { 
-            get => dt;
-            set => dt = value;
-        
+            get => LastMessage; 
+            set => lastMessage = value; 
         }
 
-        public SubServis(MqttClient client, ILog logger) 
+        public SubServis(MqttClient client) 
         {
             this.client = client;
-            this.logger = logger;
-            this._messagesId = new HashSet<string>();
-            client.Subscribe(new string[] { ConfigurationManager.AppSettings["topic2"] },
-                new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
+            client.Subscribe(new string[] { Configs.Topic2 }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            
+            client.MqttMsgPublishReceived += (sender, e) =>
+            {
+                LastMessage = DateTime.UtcNow;
+                string tema = e.Topic;
+                string poruka = Encoding.UTF8.GetString(e.Message);
+                Subscribe(poruka, tema);
+            };
         }
 
-        private void Client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        public void Subscribe(string message, string topic)
         {
-            _messagesId.Clear();
+            Files f = new Files();
+            if (topic.Equals(Configs.Topic2))
+            {
+                string imef = Configs.RootFile + LastMessage.ToString("yyyy-MM-dd_HH-mm-ss");
+                f.WriteText(message, imef);
 
-            dt = DateTime.UtcNow;
-            string tema = e.Topic;
-            string poruka = Encoding.UTF8.GetString(e.Message);
-
-            if (tema.Equals(ConfigurationManager.AppSettings["topic2"]) 
-                && !_messagesId.Contains(poruka))
-            { 
-                _messagesId.Add(poruka);
-
-                string imef = rootFolder + dt.ToString("yyyy-MM-dd_HH-mm-ss");
-                using (StreamWriter sw = new StreamWriter(imef))
-                {
-                    sw.WriteLine(poruka);
-                }
-                
-                logger.Info("Objavljena je: " + poruka + " u vreme " + dt.TimeOfDay);
+                Log4net.log.Info("Objavljena je: " + message + " u vreme " + LastMessage.TimeOfDay);
             }
         }
     }
