@@ -30,6 +30,7 @@ namespace MQTTClient2
 
         static Configs()
         {
+
             try
             {
                 Broker = ConfigurationManager.AppSettings["Mqtt broker"];
@@ -38,8 +39,9 @@ namespace MQTTClient2
                 Topic2 = ConfigurationManager.AppSettings["topic2"];
                 Username = ConfigurationManager.AppSettings["username"];
                 Password = ConfigurationManager.AppSettings["passwd"];
+                Password = ConfigurationManager.AppSettings["passwd"];
                 File = ConfigurationManager.AppSettings["file"];
-                RootFile = ConfigurationManager.AppSettings["rootFile"];
+                RootFile = ConfigurationManager.AppSettings["root"];
             }
             catch(FormatException fe)
             {

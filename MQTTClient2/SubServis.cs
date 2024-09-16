@@ -23,7 +23,7 @@ namespace MQTTClient2
 
         public DateTime LastMessage
         { 
-            get => LastMessage; 
+            get => lastMessage; 
             set => lastMessage = value; 
         }
 

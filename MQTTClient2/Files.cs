@@ -1,5 +1,7 @@
-﻿using System;
+﻿using log4net.Config;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,6 +12,8 @@ namespace MQTTClient2
 {
     internal class Files : FilesInterface
     {
+        private StringBuilder text = new StringBuilder();
+
         public StringBuilder GetText()
         {
             StringBuilder sb = new StringBuilder(); ;
@@ -20,9 +24,13 @@ namespace MQTTClient2
                     string line = null;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        sb.Append(line.Trim());
+                        sb.AppendLine(line);
                     }
                 }
+            }
+            else
+            {
+                Log4net.log.Error("Nije pronajden fajl");
             }
 
             return sb;
@@ -34,6 +42,16 @@ namespace MQTTClient2
             {
                 sw.WriteLine(text);
             }
+        }
+
+        public void AddText(String str)
+        {
+            text.Append(str);
+        }
+
+        public void NewText()
+        {
+
         }
     }
 }
