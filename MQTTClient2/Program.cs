@@ -19,48 +19,34 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
-        static PubServis pubServis;
-        static SubServis subServis;
 
         static async Task Main(string[] args)
         {
-            await ConnectingToBroker();
-
-            mqttClient.ConnectionClosed += async (sender, e) =>
-            {
-                Log4net.log.Error("Connection closed!");
+            
                 await ConnectingToBroker();
-            };
+           
         }
 
         public static async Task ConnectingToBroker()
         {
-            while (true)
+            try
             {
-                try
-                {
-                    if (!mqttClient.IsConnected)
+                
+                    mqttClient.ConnectionClosed += async (sender, e) =>
                     {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
                         Log4net.log.Info("Connected successfully!");
-                        
-                        pubServis = new PubServis(mqttClient);
-                        subServis = new SubServis(mqttClient);
-                    }
-
-                    await Task.Delay(5000);
-                }
-                catch (Exception ex) 
-                {
-                    Log4net.log.Error("Connection failed! " + ex.StackTrace);
-
-                    pubServis = null;
-                    subServis = null;
-                    
-                    await Task.Delay(5000);
-                }
+                    };
                 
+
+                await Task.Delay(5000);
             }
+            catch (Exception ex)
+            {
+                Log4net.log.Error("Connection failed! " + ex.StackTrace);
+                await Task.Delay(5000);
+            }
+            
         }
     }
 }

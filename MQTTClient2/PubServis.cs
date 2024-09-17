@@ -8,14 +8,18 @@ using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using System.Configuration;
 using System.IO;
+using System.Web.Hosting;
 
 namespace MQTTClient2
 {
-    internal class PubServis : PubServiceInterface
+    internal class PubServis : PubServiceInterface, IDisposable
     {
         private MqttClient client;
         private Thread t1 = null;
         private Files f;
+
+        private static int lastLenFile = 0;
+        bool disposed = false;
 
         public PubServis(MqttClient client)
         {
@@ -29,11 +33,11 @@ namespace MQTTClient2
         public void Publish()
         {
             StringBuilder sb = f.GetText();
+            lastLenFile = sb.Length;
 
             if (!sb.ToString().Equals(""))
             {
                 client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
-                f.AddText(sb.ToString());
                 Thread.Sleep(1000);
             }
 
@@ -53,14 +57,55 @@ namespace MQTTClient2
 
         private void onChange(object sender, FileSystemEventArgs e)
         {
-            StringBuilder sb = f.GetText();
+            StringBuilder fileInfo = f.GetText();
 
-            if (!sb.ToString().Equals(""))
+            if (fileInfo.Length > lastLenFile)
             {
-                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
-                Thread.Sleep(1000);
+                using(var stream = new FileStream(Configs.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using(var reader = new StreamReader(stream))
+                {
+                    stream.Seek(lastLenFile + 1, SeekOrigin.Begin);
+                    string poruka = reader.ReadToEnd();
+                    lastLenFile = fileInfo.Length;
+
+                    client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                    Thread.Sleep(1000);
+                }
             }
             
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+            {
+                if (disposing)
+                {
+                    if (this != null)
+                    {
+                        this.Dispose();
+                    }
+
+
+                    if (client != null && client.IsConnected)
+                    {
+                        client.Disconnect();
+                    }
+                    client = null;
+                }
+
+                disposed = true;
+            }
+        }
+        
+        ~PubServis()
+        {
+            Dispose(false);
         }
     }
 }

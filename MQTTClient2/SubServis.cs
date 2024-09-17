@@ -16,10 +16,11 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 namespace MQTTClient2
 { 
 
-    internal class SubServis : SubServiceInterface
+    internal class SubServis : SubServiceInterface, IDisposable
     {
         private MqttClient client;
         private DateTime lastMessage;
+        bool disposed = false;
 
         public DateTime LastMessage
         { 
@@ -51,6 +52,40 @@ namespace MQTTClient2
 
                 Log4net.log.Info("Objavljena je: " + message + " u vreme " + LastMessage.TimeOfDay);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+            {
+                if (disposing)
+                {
+                    if (this != null)
+                    {
+                        this.Dispose();
+                    }
+
+
+                    if (client != null && client.IsConnected)
+                    {
+                        client.Disconnect();
+                    }
+                    client = null;
+                }
+
+                disposed = true;
+            }
+        }
+
+        ~SubServis()
+        {
+            Dispose(false);
         }
     }
 }

@@ -12,8 +12,6 @@ namespace MQTTClient2
 {
     internal class Files : FilesInterface
     {
-        private StringBuilder text = new StringBuilder();
-
         public StringBuilder GetText()
         {
             StringBuilder sb = new StringBuilder(); ;
@@ -42,16 +40,6 @@ namespace MQTTClient2
             {
                 sw.WriteLine(text);
             }
-        }
-
-        public void AddText(String str)
-        {
-            text.Append(str);
-        }
-
-        public void NewText()
-        {
-
         }
     }
 }

@@ -12,6 +12,7 @@ namespace MQTTClient2
 {
     internal static class Configs
     {
+
         public static string Broker {  get; } 
 
         public static int Port {  get; }
@@ -45,7 +46,7 @@ namespace MQTTClient2
             }
             catch(FormatException fe)
             {
-                Log4net.log.Error("Number in wrong format: " + fe.StackTrace);
+                log.Error("Number in wrong format: " + fe.StackTrace);
             }
             catch (ConfigurationErrorsException ex)
             {
