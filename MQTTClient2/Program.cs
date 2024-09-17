@@ -22,30 +22,43 @@ namespace MQTTClient2
 
         static async Task Main(string[] args)
         {
-            
-                await ConnectingToBroker();
-           
+            await ConnectingToBroker();
         }
 
         public static async Task ConnectingToBroker()
         {
-            try
+            while (true)
             {
                 
-                    mqttClient.ConnectionClosed += async (sender, e) =>
+                    try
                     {
-                        mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
-                        Log4net.log.Info("Connected successfully!");
-                    };
-                
+                        
 
-                await Task.Delay(5000);
+                            if (!mqttClient.IsConnected)
+                            {
+                                mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
+                                Log4net.log.Info("Connected successfully!");
+                            }
+                        
+                        /* mqttClient.ConnectionClosed += async (sender, e) =>
+                         {
+                             mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
+                             Log4net.log.Info("Connected successfully!");
+                         };*/
+
+
+
+                        await Task.Delay(5000);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log4net.log.Error("Connection failed! " + ex.StackTrace);
+                        await Task.Delay(5000);
+                    }
+                
+                
             }
-            catch (Exception ex)
-            {
-                Log4net.log.Error("Connection failed! " + ex.StackTrace);
-                await Task.Delay(5000);
-            }
+            
             
         }
     }

@@ -46,7 +46,7 @@ namespace MQTTClient2
             }
             catch(FormatException fe)
             {
-                log.Error("Number in wrong format: " + fe.StackTrace);
+                Log4net.log.Error("Number in wrong format: " + fe.StackTrace);
             }
             catch (ConfigurationErrorsException ex)
             {

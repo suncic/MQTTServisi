@@ -16,7 +16,7 @@ namespace MQTTClient2
     {
         private MqttClient client;
         private Thread t1 = null;
-        private Files f;
+        private static Files f = new Files();
 
         private static int lastLenFile = 0;
         bool disposed = false;
@@ -26,8 +26,6 @@ namespace MQTTClient2
             this.client = client;
             this.t1 = new Thread(Publish);
             t1.Start();
-
-            f = new Files();
         }
 
         public void Publish()
