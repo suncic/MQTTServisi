@@ -19,9 +19,12 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
+        private static PubServiceInterface pubServis = null;
+        private static SubServiceInterface subServis = new SubServis(mqttClient);   
 
         static async Task Main(string[] args)
         {
+            subServis.Subscribe();
             await ConnectingToBroker();
         }
 
@@ -29,37 +32,23 @@ namespace MQTTClient2
         {
             while (true)
             {
-                
-                    try
+                try
+                {
+                    if (!mqttClient.IsConnected)
                     {
-                        
-
-                            if (!mqttClient.IsConnected)
-                            {
-                                mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
-                                Log4net.log.Info("Connected successfully!");
-                            }
-                        
-                        /* mqttClient.ConnectionClosed += async (sender, e) =>
-                         {
-                             mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
-                             Log4net.log.Info("Connected successfully!");
-                         };*/
-
-
-
-                        await Task.Delay(5000);
+                        mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
+                        Log4net.log.Info("Connected successfully!");
                     }
-                    catch (Exception ex)
-                    {
-                        Log4net.log.Error("Connection failed! " + ex.StackTrace);
-                        await Task.Delay(5000);
-                    }
-                
-                
+
+                    await Task.Delay(5000);
+                }
+                catch (Exception ex)
+                {
+                    Log4net.log.Error("Connection failed! " + ex.StackTrace);
+                    await Task.Delay(5000);
+                }
             }
-            
-            
+           
         }
     }
 }

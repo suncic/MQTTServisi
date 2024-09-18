@@ -12,18 +12,20 @@ using System.Web.Hosting;
 
 namespace MQTTClient2
 {
-    internal class PubServis : PubServiceInterface, IDisposable
+    internal class PubServis : PubServiceInterface
     {
         private MqttClient client;
         private Thread t1 = null;
-        private static Files f = new Files();
+        private FilesInterface f;
 
         private static int lastLenFile = 0;
         bool disposed = false;
 
-        public PubServis(MqttClient client)
+        public PubServis(MqttClient client, FilesInterface f)
         {
             this.client = client;
+            this.f = f;
+            f = new Files();
             this.t1 = new Thread(Publish);
             t1.Start();
         }
@@ -72,38 +74,6 @@ namespace MQTTClient2
             }
             
         }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-            {
-                if (disposing)
-                {
-                    if (this != null)
-                    {
-                        this.Dispose();
-                    }
-
-
-                    if (client != null && client.IsConnected)
-                    {
-                        client.Disconnect();
-                    }
-                    client = null;
-                }
-
-                disposed = true;
-            }
-        }
-        
-        ~PubServis()
-        {
-            Dispose(false);
-        }
+       
     }
 }

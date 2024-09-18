@@ -8,6 +8,6 @@ namespace MQTTClient2
 {
     internal interface SubServiceInterface
     {
-        void Subscribe(string message, string topic);
+        void Subscribe();
     }
 }

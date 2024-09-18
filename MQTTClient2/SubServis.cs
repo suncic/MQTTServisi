@@ -16,7 +16,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 namespace MQTTClient2
 { 
 
-    internal class SubServis : SubServiceInterface, IDisposable
+    internal class SubServis : SubServiceInterface
     {
         private MqttClient client;
         private DateTime lastMessage;
@@ -32,60 +32,32 @@ namespace MQTTClient2
         {
             this.client = client;
             client.Subscribe(new string[] { Configs.Topic2 }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            
+        }
+
+
+        public void Subscribe()
+        {
             client.MqttMsgPublishReceived += (sender, e) =>
             {
                 LastMessage = DateTime.UtcNow;
                 string tema = e.Topic;
                 string poruka = Encoding.UTF8.GetString(e.Message);
-                Subscribe(poruka, tema);
+                Subscribe(tema, poruka);
             };
         }
 
-        public void Subscribe(string message, string topic)
+        private void Subscribe(string tema, string poruka)
         {
             Files f = new Files();
-            if (topic.Equals(Configs.Topic2))
+            if (tema.Equals(Configs.Topic2))
             {
                 string imef = Configs.RootFile + LastMessage.ToString("yyyy-MM-dd_HH-mm-ss");
-                f.WriteText(message, imef);
+                f.WriteText(poruka, imef);
 
-                Log4net.log.Info("Objavljena je: " + message + " u vreme " + LastMessage.TimeOfDay);
+                Log4net.log.Info("Objavljena je: " + poruka + " u vreme " + LastMessage.TimeOfDay);
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-            {
-                if (disposing)
-                {
-                    if (this != null)
-                    {
-                        this.Dispose();
-                    }
-
-
-                    if (client != null && client.IsConnected)
-                    {
-                        client.Disconnect();
-                    }
-                    client = null;
-                }
-
-                disposed = true;
-            }
-        }
-
-        ~SubServis()
-        {
-            Dispose(false);
-        }
+       
     }
 }
