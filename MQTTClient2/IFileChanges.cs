@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace MQTTClient2
 {
-    internal interface SubServiceInterface
+    internal interface IFileChanges
     {
-        void Subscribe();
-        void Unsubscribe();
+        void MonitorFileChanges();
     }
 }

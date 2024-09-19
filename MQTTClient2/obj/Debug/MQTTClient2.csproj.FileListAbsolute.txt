@@ -98,5 +98,6 @@ E:\SB\MQTTClient2\obj\Debug\MQTTClient2.csproj.CoreCompileInputs.cache
 E:\SB\MQTTClient2\obj\Debug\MQTTClie.28F1419A.Up2Date
 E:\SB\MQTTClient2\obj\Debug\MQTTClient2.exe
 E:\SB\MQTTClient2\obj\Debug\MQTTClient2.pdb
-E:\SB\MQTTClient2\obj\Debug\MQTTClient2.csproj.SuggestedBindingRedirects.cache
-E:\SB\MQTTClient2\obj\Debug\MQTTClient2.exe.config
+E:\SB\MQTTClient2\bin\Debug\Microsoft.VisualStudio.TestTools.UITest.Extension.dll
+E:\SB\MQTTClient2\bin\Debug\Microsoft.VisualStudio.Interop.dll
+E:\SB\MQTTClient2\bin\Debug\Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime.dll

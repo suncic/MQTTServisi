@@ -9,30 +9,32 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 using System.Configuration;
 using System.IO;
 using System.Web.Hosting;
+using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace MQTTClient2
 {
-    internal class PubServis : PubServiceInterface
+    internal class PubServis : PubServiceInterface, IFileChanges
     {
         private MqttClient client;
         private Thread t1 = null;
-        private FilesInterface f;
+        private Files file;
 
         private static int lastLenFile = 0;
-        bool disposed = false;
+        private static StringBuilder oldInfo = new StringBuilder();
 
         public PubServis(MqttClient client, FilesInterface f)
         {
             this.client = client;
-            this.f = f;
-            f = new Files();
+            this.file =(Files) f;
+            file = new Files();
             this.t1 = new Thread(Publish);
             t1.Start();
         }
 
         public void Publish()
         {
-            StringBuilder sb = f.GetText();
+            StringBuilder sb = file.GetText();
             lastLenFile = sb.Length;
 
             if (!sb.ToString().Equals(""))
@@ -44,35 +46,63 @@ namespace MQTTClient2
             MonitorFileChanges();
         }
 
-        private void MonitorFileChanges()
+        public void MonitorFileChanges()
         {
             FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
             fileSystemWatcher.Path = Path.GetDirectoryName(Configs.File);
             fileSystemWatcher.Filter = Path.GetFileName(Configs.File);
             fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
-
+            oldInfo = file.GetText();
+            
             fileSystemWatcher.Changed += onChange;
             fileSystemWatcher.EnableRaisingEvents = true;
         }
 
         private void onChange(object sender, FileSystemEventArgs e)
         {
-            StringBuilder fileInfo = f.GetText();
+            StringBuilder fileInfo = file.GetText();
+            int newLen = fileInfo.Length;
 
-            if (fileInfo.Length > lastLenFile)
+            if (newLen > lastLenFile) //dodata nova poruka, ispisi je
             {
-                using(var stream = new FileStream(Configs.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using(var reader = new StreamReader(stream))
-                {
-                    stream.Seek(lastLenFile + 1, SeekOrigin.Begin);
-                    string poruka = reader.ReadToEnd();
-                    lastLenFile = fileInfo.Length;
+                FirstChange(newLen);
+            }
+            else if (newLen < lastLenFile) //obrisan neki sadrzaj, da li je dodato nesto novo
+            {
+                SecondChange(newLen, fileInfo);
+            }
+            else // ista duzina mozda drugaciji sadrzaj
+            {
 
-                    client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
-                    Thread.Sleep(1000);
-                }
             }
             
+        }
+
+        private void SecondChange(int newLen, StringBuilder sb)
+        {
+            string oldContent = oldInfo.ToString();
+            string newContent = sb.ToString();
+            using (var stream1 = new MemoryStream(Encoding.UTF8.GetBytes(oldContent)))
+            using (var stream2 = new MemoryStream(Encoding.UTF8.GetBytes(newContent)))
+            using (var reader1 = new StreamReader(stream1))
+            using (var reader2 = new StreamReader(stream2))
+            {
+
+            }
+        }
+
+        private void FirstChange(int newLen)
+        {
+            using (var stream = new FileStream(Configs.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(stream))
+            {
+                stream.Seek(lastLenFile + 1, SeekOrigin.Begin);
+                string poruka = reader.ReadToEnd();
+                lastLenFile = newLen;
+
+                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                Thread.Sleep(1000);
+            }
         }
        
     }

@@ -76,7 +76,7 @@ namespace MQTTClient2
                 return false;
             }
 
-            if (int.Parse(port, out _))
+            if (int.TryParse(port, out int result))
             {
                 log.Error("port should be a valid integer");
                 return false;

@@ -20,7 +20,7 @@ namespace MQTTClient2
     {
         private MqttClient client;
         private DateTime lastMessage;
-        bool disposed = false;
+        public bool isSubscribed { get; set; } = false;
 
         public DateTime LastMessage
         { 
@@ -31,23 +31,22 @@ namespace MQTTClient2
         public SubServis(MqttClient client) 
         {
             this.client = client;
-            client.Subscribe(new string[] { Configs.Topic2 }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
         }
 
 
         public void Subscribe()
-        {
-            client.MqttMsgPublishReceived += (sender, e) =>
-            {
-                LastMessage = DateTime.UtcNow;
-                string tema = e.Topic;
-                string poruka = Encoding.UTF8.GetString(e.Message);
-                Subscribe(tema, poruka);
-            };
+        {   
+            client.Subscribe(new string[] { Configs.Topic2 }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            isSubscribed = true;
+            client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
         }
 
-        private void Subscribe(string tema, string poruka)
+        private void Client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
+            LastMessage = DateTime.UtcNow;
+            string tema = e.Topic;
+            string poruka = Encoding.UTF8.GetString(e.Message);
+
             Files f = new Files();
             if (tema.Equals(Configs.Topic2))
             {
@@ -58,6 +57,10 @@ namespace MQTTClient2
             }
         }
 
-       
+        public void Unsubscribe()
+        {
+            client.Unsubscribe(new string[] { Configs.Topic2 });
+            isSubscribed = false;
+        }
     }
 }

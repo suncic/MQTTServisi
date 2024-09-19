@@ -80,6 +80,7 @@
     <Compile Include="Configs.cs" />
     <Compile Include="Files.cs" />
     <Compile Include="FilesInterface.cs" />
+    <Compile Include="IFileChanges.cs" />
     <Compile Include="Log4net.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

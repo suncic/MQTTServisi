@@ -12,6 +12,7 @@ using System.IO;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
 using static uPLibrary.Networking.M2Mqtt.MqttClient;
 using static System.Net.WebRequestMethods;
+using System.Threading;
 
 namespace MQTTClient2
 {
@@ -19,17 +20,15 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
-        private static PubServiceInterface pubServis = null;
-        private static SubServiceInterface subServis = new SubServis(mqttClient);   
+        private static FilesInterface f;
+        private static PubServiceInterface pubServis = new PubServis(mqttClient, f);
+        private static SubServis subServis = new SubServis(mqttClient);   
+
 
         static async Task Main(string[] args)
         {
             subServis.Subscribe();
-            await ConnectingToBroker();
-        }
 
-        public static async Task ConnectingToBroker()
-        {
             while (true)
             {
                 try
@@ -40,15 +39,16 @@ namespace MQTTClient2
                         Log4net.log.Info("Connected successfully!");
                     }
 
-                    await Task.Delay(5000);
+                    Thread.Sleep(5000);
+
                 }
                 catch (Exception ex)
                 {
                     Log4net.log.Error("Connection failed! " + ex.StackTrace);
-                    await Task.Delay(5000);
+                    Thread.Sleep(5000);
                 }
             }
-           
+            
         }
     }
 }
