@@ -17,13 +17,20 @@ namespace MQTTClient2
             StringBuilder sb = new StringBuilder(); ;
             if (File.Exists(Configs.File))
             {
-                using (StreamReader sr = new StreamReader(Configs.File))
+                try
                 {
-                    string line = null;
-                    while ((line = sr.ReadLine()) != null)
+                    using (StreamReader sr = new StreamReader(Configs.File))
                     {
-                        sb.AppendLine(line);
+                        string line = null;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            sb.AppendLine(line);
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Log4net.log.Error(ex.Message);
                 }
             }
             else

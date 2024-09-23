@@ -25,28 +25,32 @@ namespace MQTTClient2
         private static SubServis subServis = new SubServis(mqttClient);   
 
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            subServis.Subscribe();
+            pubServis.Publish();
 
             while (true)
             {
                 try
                 {
-                    if (!mqttClient.IsConnected)
-                    {
-                        mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password);
+                    if (!mqttClient.IsConnected) {
+                        mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");
+
+
+                        if (!subServis.isSubscribed)
+                        {
+                            subServis.Subscribe();
+                            Log4net.log.Info("Subscribed on topic");
+                        }
                     }
-
-                    Thread.Sleep(5000);
-
                 }
                 catch (Exception ex)
                 {
-                    Log4net.log.Error("Connection failed! " + ex.StackTrace);
-                    Thread.Sleep(5000);
+                    Log4net.log.Error("Connection failed! " + ex.StackTrace);                    
                 }
+
+                Thread.Sleep(5000);
             }
             
         }

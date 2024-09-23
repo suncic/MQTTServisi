@@ -20,7 +20,6 @@ namespace MQTTClient2
         private Thread t1 = null;
         private Files file;
 
-        private static int lastLenFile = 0;
         private static StringBuilder oldInfo = new StringBuilder();
 
         public PubServis(MqttClient client, FilesInterface f)
@@ -35,7 +34,6 @@ namespace MQTTClient2
         public void Publish()
         {
             StringBuilder sb = file.GetText();
-            lastLenFile = sb.Length;
 
             if (!sb.ToString().Equals(""))
             {
@@ -61,47 +59,61 @@ namespace MQTTClient2
         private void onChange(object sender, FileSystemEventArgs e)
         {
             StringBuilder fileInfo = file.GetText();
-            int newLen = fileInfo.Length;
-
-            if (newLen > lastLenFile) //dodata nova poruka, ispisi je
-            {
-                FirstChange(newLen);
-            }
-            else if (newLen < lastLenFile) //obrisan neki sadrzaj, da li je dodato nesto novo
-            {
-                SecondChange(newLen, fileInfo);
-            }
-            else // ista duzina mozda drugaciji sadrzaj
-            {
-
-            }
-            
+            Change(fileInfo);
         }
 
-        private void SecondChange(int newLen, StringBuilder sb)
+        private void Change(StringBuilder sb)
         {
             string oldContent = oldInfo.ToString();
             string newContent = sb.ToString();
             using (var stream1 = new MemoryStream(Encoding.UTF8.GetBytes(oldContent)))
             using (var stream2 = new MemoryStream(Encoding.UTF8.GetBytes(newContent)))
-            using (var reader1 = new StreamReader(stream1))
-            using (var reader2 = new StreamReader(stream2))
+            using(var reader = new StreamReader(stream2))
             {
-
+                int firstDiference = CompareStreams(stream1, stream2);
+                if (firstDiference == -1)
+                {
+                    Log4net.log.Info("Sadrzaj je isti, nista ne pablisujemo");
+                }
+                else
+                {
+                    //streamovi su razliciti od indexa firstDiference
+                    //radim samo nad streamom2 zato sto je to izvrsena promena
+                    stream2.Seek(firstDiference, SeekOrigin.Begin);
+                    string poruka = reader.ReadToEnd();
+                    client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                    Thread.Sleep(1000);
+                }
             }
         }
 
-        private void FirstChange(int newLen)
+        private int CompareStreams(Stream stream1, Stream stream2)
         {
-            using (var stream = new FileStream(Configs.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var reader = new StreamReader(stream))
-            {
-                stream.Seek(lastLenFile + 1, SeekOrigin.Begin);
-                string poruka = reader.ReadToEnd();
-                lastLenFile = newLen;
+            int index = 0;
+            int byte1, byte2;
 
-                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
-                Thread.Sleep(1000);
+            while (true)
+            {
+                byte1 = stream1.ReadByte();
+                byte2 = stream2.ReadByte();
+
+
+                if (byte1 == -1 && byte2 == -1) //zavrsili su se streamovi, potpuno isti streamovi
+                {
+                    return -1;
+                }
+
+                if(byte1 == -1 || byte2 == -1) //jedan je kraci od drugoga, jedan je dosao do kraja
+                {
+                    return index;
+                }
+
+                if (byte1 != byte2) //prva razlika, nije dosao do kraja
+                {
+                    return index;
+                }
+
+                index++;
             }
         }
        
