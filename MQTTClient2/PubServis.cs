@@ -34,12 +34,8 @@ namespace MQTTClient2
         public void Publish()
         {
             StringBuilder sb = file.GetText();
-
-            if (!sb.ToString().Equals(""))
-            {
-                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
-                Thread.Sleep(1000);
-            }
+            client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
+            Thread.Sleep(1000);
 
             MonitorFileChanges();
         }
@@ -51,7 +47,7 @@ namespace MQTTClient2
             fileSystemWatcher.Filter = Path.GetFileName(Configs.File);
             fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
             oldInfo = file.GetText();
-            
+
             fileSystemWatcher.Changed += onChange;
             fileSystemWatcher.EnableRaisingEvents = true;
         }
@@ -66,24 +62,50 @@ namespace MQTTClient2
         {
             string oldContent = oldInfo.ToString();
             string newContent = sb.ToString();
-            using (var stream1 = new MemoryStream(Encoding.UTF8.GetBytes(oldContent)))
-            using (var stream2 = new MemoryStream(Encoding.UTF8.GetBytes(newContent)))
-            using(var reader = new StreamReader(stream2))
+
+            int oldLen = oldContent.Length;
+            int newLen = newContent.Length;
+            int razLen = oldLen - newLen;
+
+            if (razLen < 0)
             {
-                int firstDiference = CompareStreams(stream1, stream2);
-                if (firstDiference == -1)
-                {
-                    Log4net.log.Info("Sadrzaj je isti, nista ne pablisujemo");
-                }
-                else
-                {
-                    //streamovi su razliciti od indexa firstDiference
-                    //radim samo nad streamom2 zato sto je to izvrsena promena
-                    stream2.Seek(firstDiference, SeekOrigin.Begin);
-                    string poruka = reader.ReadToEnd();
-                    client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
-                    Thread.Sleep(1000);
-                }
+                ReadNewLines(sb, oldLen);
+            }
+            else if(razLen >= 0)
+            {
+                var oldStream = new MemoryStream(Encoding.UTF8.GetBytes(newContent));
+                var newStream = new MemoryStream(Encoding.UTF8.GetBytes(oldContent));
+                
+                int firstDiference = CompareStreams(oldStream, newStream);
+                ReadNewLines2(sb, firstDiference);  
+            }
+
+        }
+
+        private void ReadNewLines(StringBuilder newContent, int oldLen)
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(newContent.ToString())))
+            using (var reader = new StreamReader(stream))
+            {
+                stream.Seek(oldLen, SeekOrigin.Begin);
+                string poruka = reader.ReadToEnd();
+                oldInfo.Append(poruka);
+                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                Thread.Sleep(1000);
+            }
+        }
+
+        private void ReadNewLines2(StringBuilder newContent, int oldLen)
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(newContent.ToString())))
+            using (var reader = new StreamReader(stream))
+            {
+                stream.Seek(oldLen, SeekOrigin.Begin);
+                string poruka = reader.ReadToEnd();
+                oldInfo = newContent;
+                oldInfo.Append(poruka);
+                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                Thread.Sleep(1000);
             }
         }
 

@@ -27,7 +27,6 @@ namespace MQTTClient2
 
         static void Main(string[] args)
         {
-            pubServis.Publish();
 
             while (true)
             {
@@ -47,7 +46,7 @@ namespace MQTTClient2
                 }
                 catch (Exception ex)
                 {
-                    Log4net.log.Error("Connection failed! " + ex.StackTrace);                    
+                    Log4net.log.Error("Connection failed! " + ex.StackTrace);  
                 }
 
                 Thread.Sleep(5000);
