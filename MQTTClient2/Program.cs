@@ -20,9 +20,9 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
-        private static FilesInterface f;
-        private static PubServiceInterface pubServis = new PubServis(mqttClient, f);
-        private static SubServis subServis = new SubServis(mqttClient);   
+        private static IFiles f = new Files();
+        private static IPubService pubServis = new PubServis(mqttClient, f);
+        private static SubServis subServis = new SubServis(mqttClient);
 
 
         static void Main(string[] args)
@@ -32,21 +32,19 @@ namespace MQTTClient2
             {
                 try
                 {
+
                     if (!mqttClient.IsConnected) {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");
 
-
-                        if (!subServis.isSubscribed)
-                        {
                             subServis.Subscribe();
-                            Log4net.log.Info("Subscribed on topic");
-                        }
+                           Log4net.log.Info("Subscribed on topic");
+                        
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log4net.log.Error("Connection failed! " + ex.StackTrace);  
+                    Log4net.log.Error("Connection failed! " + ex.StackTrace);
                 }
 
                 Thread.Sleep(5000);

@@ -8,6 +8,6 @@ namespace MQTTClient2
 {
     internal interface IFileChanges
     {
-        void MonitorFileChanges();
+        void onChange(); // vrati stari izgled fajla
     }
 }

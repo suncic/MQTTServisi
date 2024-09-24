@@ -16,7 +16,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 namespace MQTTClient2
 { 
 
-    internal class SubServis : SubServiceInterface
+    internal class SubServis : ISubService
     {
         private MqttClient client;
         private DateTime lastMessage;
@@ -33,11 +33,11 @@ namespace MQTTClient2
             this.client = client;
         }
 
-
         public void Subscribe()
-        {   
+        {
             client.Subscribe(new string[] { Configs.Topic2 }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             isSubscribed = true;
+            client.MqttMsgPublishReceived -= Client_MqttMsgPublishReceived;
             client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
         }
 

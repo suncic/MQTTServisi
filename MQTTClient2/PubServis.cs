@@ -14,19 +14,18 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace MQTTClient2
 {
-    internal class PubServis : PubServiceInterface, IFileChanges
+    internal class PubServis : IPubService, IFileChanges
     {
         private MqttClient client;
         private Thread t1 = null;
-        private Files file;
+        private IFiles file;
 
         private static StringBuilder oldInfo = new StringBuilder();
 
-        public PubServis(MqttClient client, FilesInterface f)
+        public PubServis(MqttClient client, IFiles f)
         {
             this.client = client;
-            this.file =(Files) f;
-            file = new Files();
+            this.file = f;
             this.t1 = new Thread(Publish);
             t1.Start();
         }
@@ -58,30 +57,6 @@ namespace MQTTClient2
             Change(fileInfo);
         }
 
-        private void Change(StringBuilder sb)
-        {
-            string oldContent = oldInfo.ToString();
-            string newContent = sb.ToString();
-
-            int oldLen = oldContent.Length;
-            int newLen = newContent.Length;
-            int razLen = oldLen - newLen;
-
-            if (razLen < 0)
-            {
-                ReadNewLines(sb, oldLen);
-            }
-            else if(razLen >= 0)
-            {
-                var oldStream = new MemoryStream(Encoding.UTF8.GetBytes(newContent));
-                var newStream = new MemoryStream(Encoding.UTF8.GetBytes(oldContent));
-                
-                int firstDiference = CompareStreams(oldStream, newStream);
-                ReadNewLines2(sb, firstDiference);  
-            }
-
-        }
-
         private void ReadNewLines(StringBuilder newContent, int oldLen)
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(newContent.ToString())))
@@ -109,35 +84,5 @@ namespace MQTTClient2
             }
         }
 
-        private int CompareStreams(Stream stream1, Stream stream2)
-        {
-            int index = 0;
-            int byte1, byte2;
-
-            while (true)
-            {
-                byte1 = stream1.ReadByte();
-                byte2 = stream2.ReadByte();
-
-
-                if (byte1 == -1 && byte2 == -1) //zavrsili su se streamovi, potpuno isti streamovi
-                {
-                    return -1;
-                }
-
-                if(byte1 == -1 || byte2 == -1) //jedan je kraci od drugoga, jedan je dosao do kraja
-                {
-                    return index;
-                }
-
-                if (byte1 != byte2) //prva razlika, nije dosao do kraja
-                {
-                    return index;
-                }
-
-                index++;
-            }
-        }
-       
     }
 }

@@ -14,112 +14,95 @@ namespace MQTTClient2
     {
         static ILog log = LogManager.GetLogger(typeof(Configs));
 
-        public static string Broker {  get; } 
+        public static string Broker { get; } = "localhost";
 
-        public static int Port {  get; }
+        public static int Port { get; } = 1883;
 
-        public static  string Topic1 { get; }
+        public static string Topic1 { get; } = "suncica";
 
-        public static string Topic2 { get; }
+        public static string Topic2 { get; } = "suncica";
 
-        public static string Username { get; }
+        public static string Username { get; } = "suncica";
 
-        public static string Password { get; }
+        public static string Password { get; } = "suncica";
 
-        public static string File { get; }
+        public static string File { get; } = "E:";
 
-        public static string RootFile { get; }
+        public static string RootFile { get; } = "E:";
 
         static Configs()
         {
             try
             {
-                Broker = ConfigurationManager.AppSettings["Mqtt broker"];
+               Broker = ConfigurationManager.AppSettings["Mqtt broker"];
+            }
+            catch(Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 Port = int.Parse(ConfigurationManager.AppSettings["port"]);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 Topic1 = ConfigurationManager.AppSettings["topic1"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 Topic2 = ConfigurationManager.AppSettings["topic2"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 Username = ConfigurationManager.AppSettings["username"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 Password = ConfigurationManager.AppSettings["passwd"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 File = ConfigurationManager.AppSettings["file"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
                 RootFile = ConfigurationManager.AppSettings["root"];
             }
-            catch (FormatException fe)
+            catch (Exception ex)
             {
-                Log4net.log.Error("Number in wrong format: " + fe.StackTrace);
+                log.Error(ex.Message);
             }
-            catch (ConfigurationErrorsException ex)
-            {
-                Log4net.log.Error("Configuration error: " + ex.Message);
-            }
-            catch (KeyNotFoundException knfe)
-            {
-                Log4net.log.Error("Key not found: " + knfe.StackTrace);
-            }
-
-            validateConfiguration();
-        }
-        
-       private static bool validateConfiguration()
-        {
-            var broker = Broker;
-            var port = ConfigurationManager.AppSettings["port"];
-            var topic1 = Topic1;
-            var topic2 = Topic2;
-            var username = Username;
-            var password = Password;
-            var file = File;
-            var root = RootFile;
-
-            if (string.IsNullOrEmpty(broker))
-            {
-                log.Error("broker should not be empty");
-                return false;
-            }
-
-            if (int.TryParse(port, out int result))
-            {
-                log.Error("port should be a valid integer");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(topic1))
-            {
-                log.Error("topic1 should not be empty");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(topic2))
-            {
-                log.Error("topic2 should not be empty");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(username))
-            {
-                log.Error("username should not be empty");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                log.Error("password should not be empty");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(file))
-            {
-                log.Error("file should not be empty");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(root))
-            {
-                log.Error("root file should not be empty");
-                return false;
-            }
-
-
-            return true;
         }
     }
 }

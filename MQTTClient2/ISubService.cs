@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace MQTTClient2
 {
-    internal interface FilesInterface
+    internal interface ISubService
     {
-        StringBuilder GetText();
-        void WriteText(string text, string imef);
+        void Subscribe();
+        void Unsubscribe();
     }
 }

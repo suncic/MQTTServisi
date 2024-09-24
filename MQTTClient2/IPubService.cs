@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MQTTClient2
 {
-    internal interface PubServiceInterface
+    internal interface IPubService
     {
         void Publish();
     }
