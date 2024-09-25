@@ -36,10 +36,7 @@ namespace MQTTClient2
                     if (!mqttClient.IsConnected) {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");
-
-                            subServis.Subscribe();
-                           Log4net.log.Info("Subscribed on topic");
-                        
+                        subServis.Subscribe();
                     }
                 }
                 catch (Exception ex)

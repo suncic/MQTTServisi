@@ -14,11 +14,12 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace MQTTClient2
 {
-    internal class PubServis : IPubService, IFileChanges
+    internal class PubServis : IPubService
     {
         private MqttClient client;
         private Thread t1 = null;
         private IFiles file;
+        private IFileChanges fileChanges;
 
         private static StringBuilder oldInfo = new StringBuilder();
 
@@ -26,6 +27,8 @@ namespace MQTTClient2
         {
             this.client = client;
             this.file = f;
+            this.fileChanges = new FileChangesManual(file);
+            //this.fileChanges = new FileChangesEvent(file);
             this.t1 = new Thread(Publish);
             t1.Start();
         }
@@ -36,53 +39,7 @@ namespace MQTTClient2
             client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
             Thread.Sleep(1000);
 
-            MonitorFileChanges();
+            fileChanges.onChange(client);
         }
-
-        public void MonitorFileChanges()
-        {
-            FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
-            fileSystemWatcher.Path = Path.GetDirectoryName(Configs.File);
-            fileSystemWatcher.Filter = Path.GetFileName(Configs.File);
-            fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
-            oldInfo = file.GetText();
-
-            fileSystemWatcher.Changed += onChange;
-            fileSystemWatcher.EnableRaisingEvents = true;
-        }
-
-        private void onChange(object sender, FileSystemEventArgs e)
-        {
-            StringBuilder fileInfo = file.GetText();
-            Change(fileInfo);
-        }
-
-        private void ReadNewLines(StringBuilder newContent, int oldLen)
-        {
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(newContent.ToString())))
-            using (var reader = new StreamReader(stream))
-            {
-                stream.Seek(oldLen, SeekOrigin.Begin);
-                string poruka = reader.ReadToEnd();
-                oldInfo.Append(poruka);
-                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
-                Thread.Sleep(1000);
-            }
-        }
-
-        private void ReadNewLines2(StringBuilder newContent, int oldLen)
-        {
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(newContent.ToString())))
-            using (var reader = new StreamReader(stream))
-            {
-                stream.Seek(oldLen, SeekOrigin.Begin);
-                string poruka = reader.ReadToEnd();
-                oldInfo = newContent;
-                oldInfo.Append(poruka);
-                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
-                Thread.Sleep(1000);
-            }
-        }
-
     }
 }

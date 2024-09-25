@@ -13,6 +13,7 @@ namespace MQTTClient2
 {
     internal class Files : IFiles
     {
+        
         public StringBuilder GetText()
         {
             StringBuilder sb = new StringBuilder(); ;
@@ -50,7 +51,7 @@ namespace MQTTClient2
             }
         }
 
-        public void Change(StringBuilder sb, StringBuilder oldInfo)
+        public string Change(StringBuilder sb, StringBuilder oldInfo)
         {
             string oldContent = oldInfo.ToString();
             string newContent = sb.ToString();
@@ -61,15 +62,28 @@ namespace MQTTClient2
 
             if (razLen < 0)
             {
-                ReadNewLines(sb, oldLen);
+                return ReadNewLines(sb, oldLen, oldInfo);
             }
-            else if (razLen >= 0)
+            else
             {
                 var oldStream = new MemoryStream(Encoding.UTF8.GetBytes(newContent));
                 var newStream = new MemoryStream(Encoding.UTF8.GetBytes(oldContent));
 
                 int firstDiference = CompareStreams(oldStream, newStream);
-                ReadNewLines2(sb, firstDiference);
+                return ReadNewLines(sb, firstDiference, oldInfo);
+            }
+        }
+
+        private string ReadNewLines(StringBuilder newContent, int oldLen, StringBuilder oldInfo)
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(newContent.ToString())))
+            using (var reader = new StreamReader(stream))
+            {
+                stream.Seek(oldLen, SeekOrigin.Begin);
+                string poruka = reader.ReadToEnd();
+                oldInfo.Append(poruka);
+
+                return poruka;
             }
         }
 

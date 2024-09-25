@@ -2,38 +2,39 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using uPLibrary.Networking.M2Mqtt;
 
 namespace MQTTClient2
 {
     internal class FileChangesEvent : IFileChanges
     {
-        FileSystemWatcher fileSystemWatcher;
-        IFiles file = new Files();
-        StringBuilder oldInfo;
+        private FileSystemWatcher fileSystemWatcher;
+        private IFiles file;
+        private StringBuilder oldInfo;
 
-        public FileChangesEvent()
+        public FileChangesEvent(IFiles f)
         {
             fileSystemWatcher = new FileSystemWatcher();
+            this.file = f;
         }
 
-        public void onChange()
+        public void onChange(MqttClient client)
         {
             fileSystemWatcher.Path = Path.GetDirectoryName(Configs.File);
             fileSystemWatcher.Filter = Path.GetFileName(Configs.File);
             fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
             oldInfo = file.GetText();
 
-            fileSystemWatcher.Changed += OnChange;
+            fileSystemWatcher.Changed += (sender, e) =>
+            {
+                StringBuilder fileInfo = file.GetText();
+                string poruka = file.Change(fileInfo, oldInfo);
+                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+            };
             fileSystemWatcher.EnableRaisingEvents = true;
         }
-
-        private void OnChange(object sender, FileSystemEventArgs e)
-        {
-            StringBuilder fileInfo = file.GetText();
-            file.Change(fileInfo, oldInfo);
-        }
-    
     }
 }

@@ -10,6 +10,6 @@ namespace MQTTClient2
     {
         StringBuilder GetText();
         void WriteText(string text, string imef);
-        void Change(StringBuilder sb, StringBuilder oldInfo);
+        string Change(StringBuilder sb, StringBuilder oldInfo);
     }
 }
