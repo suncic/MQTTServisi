@@ -27,12 +27,10 @@ namespace MQTTClient2
 
         static void Main(string[] args)
         {
-
             while (true)
             {
                 try
                 {
-
                     if (!mqttClient.IsConnected) {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");

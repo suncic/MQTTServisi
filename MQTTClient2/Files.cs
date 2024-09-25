@@ -97,18 +97,20 @@ namespace MQTTClient2
                 byte1 = stream1.ReadByte();
                 byte2 = stream2.ReadByte();
 
-
-                if (byte1 == -1 && byte2 == -1) //zavrsili su se streamovi, potpuno isti streamovi
+                //zavrsili su se streamovi, potpuno isti streamovi
+                if (byte1 == -1 && byte2 == -1)
                 {
                     return -1;
                 }
 
-                if (byte1 == -1 || byte2 == -1) //jedan je kraci od drugoga, jedan je dosao do kraja
+                //jedan je kraci od drugoga, jedan je dosao do kraja
+                if (byte1 == -1 || byte2 == -1)
                 {
                     return index;
                 }
 
-                if (byte1 != byte2) //prva razlika, nije dosao do kraja
+                //prva razlika, nije dosao do kraja
+                if (byte1 != byte2)
                 {
                     return index;
                 }
