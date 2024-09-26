@@ -30,6 +30,8 @@ namespace MQTTClient2
 
         public static string RootFile { get; } = "E:";
 
+        public static string ConnString { get; } = "";
+
         static Configs()
         {
             try
@@ -100,6 +102,15 @@ namespace MQTTClient2
                 RootFile = ConfigurationManager.AppSettings["root"];
             }
             catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
+                ConnString = ConfigurationManager.AppSettings["connectionString"];
+            }
+            catch(Exception ex)
             {
                 log.Error(ex.Message);
             }

@@ -13,6 +13,7 @@ using uPLibrary.Networking.M2Mqtt.Exceptions;
 using static uPLibrary.Networking.M2Mqtt.MqttClient;
 using static System.Net.WebRequestMethods;
 using System.Threading;
+using MySql.Data.MySqlClient;
 
 namespace MQTTClient2
 {
@@ -27,11 +28,32 @@ namespace MQTTClient2
 
         static void Main(string[] args)
         {
+            using (MySqlConnection connection = new MySqlConnection(Configs.ConnString))
+            {
+                try
+                {
+                    connection.Open();
+                    Log4net.log.Info("Connected on database");
+
+                    ConnectOnBroker();
+                }
+                catch (MySqlException ex)
+                {
+                    Log4net.log.Error(ex.Message);
+                }
+                
+            }
+            
+        }
+
+        private static void ConnectOnBroker()
+        {
             while (true)
             {
                 try
                 {
-                    if (!mqttClient.IsConnected) {
+                    if (!mqttClient.IsConnected)
+                    {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");
                         subServis.Subscribe();
@@ -44,7 +66,6 @@ namespace MQTTClient2
 
                 Thread.Sleep(5000);
             }
-            
         }
     }
 }
