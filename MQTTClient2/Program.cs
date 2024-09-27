@@ -21,29 +21,31 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
+        private static MySqlConnection connection = new MySqlConnection(Configs.ConnString);
         private static IFiles f = new Files();
-        private static IPubService pubServis = new PubServis(mqttClient, f);
-        private static SubServis subServis = new SubServis(mqttClient);
+        private static MySqlDataReader reader = null;
+        private static SubServis subServis = new SubServis(mqttClient, connection);
 
 
         static void Main(string[] args)
         {
-            using (MySqlConnection connection = new MySqlConnection(Configs.ConnString))
+            try
             {
-                try
-                {
-                    connection.Open();
-                    Log4net.log.Info("Connected on database");
+                connection.Open();
+                CloseExsistingReader();
+                Log4net.log.Info("Connected on database");
 
-                    ConnectOnBroker();
-                }
-                catch (MySqlException ex)
-                {
-                    Log4net.log.Error(ex.Message);
-                }
-                
+                //IPubService pubServis = new PubServis(mqttClient, f, connection, reader);
+                ConnectOnBroker();
             }
-            
+            catch (MySqlException ex)
+            {
+                Log4net.log.Error(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
 
         private static void ConnectOnBroker()
@@ -65,6 +67,15 @@ namespace MQTTClient2
                 }
 
                 Thread.Sleep(5000);
+            }
+        }
+
+        private static void CloseExsistingReader()
+        {
+            if(reader != null && !reader.IsClosed)
+            {
+                reader.Close();
+                reader.Dispose();
             }
         }
     }
