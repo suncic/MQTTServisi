@@ -56,17 +56,23 @@ namespace MQTTClient2
             Files f = new Files();
             if (tema.Equals(Configs.Topic2))
             {
-                string imef = Configs.RootFile + LastMessage.ToString("yyyy-MM-dd_HH-mm-ss");
-                f.WriteText(poruka, imef);
-                int i = pSub.AddInDatabase(poruka);
-
-                if (i <= -1)
+                if (con != null)
                 {
-                    Log4net.log.Warn("Nije dodat ni jedan red");
+                    int i = pSub.AddInDatabase(poruka);
+
+                    if (i <= -1)
+                    {
+                        Log4net.log.Warn("Nije dodat ni jedan red");
+                    }
+                    else
+                    {
+                        Log4net.log.Info("Dodato je " + i + " redova");
+                    }
                 }
                 else
                 {
-                    Log4net.log.Info("Dodato je " + i + " redova");
+                    string imef = Configs.RootFile + LastMessage.ToString("yyyy-MM-dd_HH-mm-ss");
+                    f.WriteText(poruka, imef);
                 }
 
                 Log4net.log.Info("Objavljena je: " + poruka + " u vreme " + LastMessage.TimeOfDay);

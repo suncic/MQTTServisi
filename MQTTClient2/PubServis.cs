@@ -24,6 +24,7 @@ namespace MQTTClient2
         private IFileChanges fileChanges;
         private MySqlConnection conn;
         private DBChanges dbChanges;
+        private Action<string> action;
 
         private static StringBuilder oldInfo = new StringBuilder();
 
@@ -40,12 +41,19 @@ namespace MQTTClient2
 
         public void Publish()
         {
-            /*StringBuilder sb = file.GetText();
-            client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
-            Thread.Sleep(1000);*/
+            if (conn != null && conn.State == System.Data.ConnectionState.Open)
+            {
+                dbChanges.onChange();
+                
+            }
+            else
+            {
+                StringBuilder sb = file.GetText();
+                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
+                Thread.Sleep(1000);
 
-            //fileChanges.onChange(client);
-            dbChanges.onChange();
+                fileChanges.onChange(action);
+            }
         }
     }
 }

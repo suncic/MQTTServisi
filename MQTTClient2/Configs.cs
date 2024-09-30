@@ -44,6 +44,8 @@ namespace MQTTClient2
 
         public static string FileChangeDetMethod { get; } = "";
 
+        public static string FileDBDet { get; } = "";
+
         static Configs()
         {
             try
@@ -174,8 +176,16 @@ namespace MQTTClient2
 
             try
             {
-
                 FileChangeDetMethod = ConfigurationManager.AppSettings["FileChangeDetMethod"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
+                FileDBDet = ConfigurationManager.AppSettings["FileDBDet"];
             }
             catch (Exception ex)
             {

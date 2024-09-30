@@ -21,23 +21,42 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
-        private static MySqlConnection connection = new MySqlConnection(Configs.ConnString);
+        private static MySqlConnection connection;
         private static IFiles f = new Files();
         private static IFileChanges fileChanges;
         private static SubServis subServis = new SubServis(mqttClient, connection);
 
-
         static void Main(string[] args)
         {
+            FileDBDet();
+        }
+
+        private static void FileDBDet()
+        {
+            switch (Configs.FileDBDet)
+            {
+                case "FILE":
+                    setupFileChanges();
+                    break;
+                case "DB":
+                    setupDBConnection();
+                    break;
+                default:
+                    throw new ArgumentException("Not recognized... ");
+            }
+        }
+
+        private static void setupDBConnection()
+        {
             try
-            {   
+            {
+                connection = new MySqlConnection(Configs.ConnString);
                 connection.Open();
                 Log4net.log.Info("Connected on database");
 
-                setupFileChanges();
                 IPubService pubServis = new PubServis(mqttClient, f, connection, fileChanges);
-
                 ConnectOnBroker();
+
             }
             catch (MySqlException ex)
             {
@@ -63,6 +82,9 @@ namespace MQTTClient2
                     throw new ArgumentException("Not recognized... ");
             }
 
+            IPubService pubServis = new PubServis(mqttClient, f, connection, fileChanges);
+            ConnectOnBroker();
+
             fileChanges.onChange(poruka =>
             {
                 mqttClient.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
@@ -71,6 +93,7 @@ namespace MQTTClient2
 
         private static void ConnectOnBroker()
         {
+            
             while (true)
             {
                 try
