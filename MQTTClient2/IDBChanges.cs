@@ -10,6 +10,6 @@ namespace MQTTClient2
 {
     internal interface IDBChanges
     {
-        void onChange(MqttClient client, MySqlDataReader reader);
+        void onChange();
     }
 }

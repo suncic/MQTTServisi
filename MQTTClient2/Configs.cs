@@ -32,6 +32,14 @@ namespace MQTTClient2
 
         public static string ConnString { get; } = "";
 
+        public static string Col1 { get; } = "";
+
+        public static string Col2 { get; } = "";
+
+        public static string Col3 { get; } = "";
+
+        public static string Pattern { get; } = "";
+
         static Configs()
         {
             try
@@ -109,6 +117,24 @@ namespace MQTTClient2
             try
             {
                 ConnString = ConfigurationManager.AppSettings["connectionString"];
+            }
+            catch(Exception ex)
+            {
+                log.Error(ex.Message);
+            } 
+            
+            try
+            {
+                Col1 = ConfigurationManager.AppSettings["col1"];
+            }
+            catch(Exception ex)
+            {
+                log.Error(ex.Message);
+            } 
+            
+            try
+            {
+                Col2 = ConfigurationManager.AppSettings["col2"];
             }
             catch(Exception ex)
             {

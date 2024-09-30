@@ -20,16 +20,19 @@ namespace MQTTClient2
 
         public int AddInDatabase(String poruka)
         {
-            //automatizovati dodavanje id-a
             if (RegexMessage(poruka))
             {
                 string[] tokens = poruka.Split(' ');
-                string sql = "insert into person(PesonName, PersonSurname, PersonCol) value('" + tokens[0] + "','" + tokens[1] + "'," + int.Parse(tokens[2]) + ")";
+                string sql = "insert into person(PersonName, PersonSurname, PersonAge) value('" + tokens[0] + "','" + tokens[1] + "'," + int.Parse(tokens[2]) + ")";
 
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 int i = cmd.ExecuteNonQuery();
 
                 return i;
+            }
+            else
+            {
+                Log4net.log.Info("Primljena poruka nije odgovarajuceg formata");
             }
 
             return -1;

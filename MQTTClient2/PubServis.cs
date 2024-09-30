@@ -24,17 +24,15 @@ namespace MQTTClient2
         private IFileChanges fileChanges;
         private MySqlConnection conn;
         private DBChanges dbChanges;
-        private MySqlDataReader reader;
 
         private static StringBuilder oldInfo = new StringBuilder();
 
-        public PubServis(MqttClient client, IFiles f, MySqlConnection con, MySqlDataReader reader)
+        public PubServis(MqttClient client, IFiles f, MySqlConnection con, IFileChanges fileChanges)
         {
             this.client = client;
             this.file = f;
             this.conn = con;
-            this.reader = reader;
-            this.fileChanges = new FileChangesManual(file);
+            this.fileChanges = fileChanges;
             //this.fileChanges = new FileChangesEvent(file);
             dbChanges = new DBChanges(con, client);
             this.t1 = new Thread(Publish);
@@ -48,7 +46,7 @@ namespace MQTTClient2
             Thread.Sleep(1000);*/
 
             //fileChanges.onChange(client);
-            dbChanges.onChange(client, reader);
+            dbChanges.onChange();
         }
     }
 }

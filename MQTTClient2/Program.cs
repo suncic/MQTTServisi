@@ -23,7 +23,7 @@ namespace MQTTClient2
                 null, MqttSslProtocols.TLSv1_2);
         private static MySqlConnection connection = new MySqlConnection(Configs.ConnString);
         private static IFiles f = new Files();
-        private static MySqlDataReader reader = null;
+        private static IFileChanges fileChanges;
         private static SubServis subServis = new SubServis(mqttClient, connection);
 
 
@@ -31,11 +31,12 @@ namespace MQTTClient2
         {
             try
             {
-                connection.Open();
-                CloseExsistingReader();
-                Log4net.log.Info("Connected on database");
+                setupFileChanges();
 
-                //IPubService pubServis = new PubServis(mqttClient, f, connection, reader);
+                connection.Open();
+                Log4net.log.Info("Connected on database");
+                IPubService pubServis = new PubServis(mqttClient, f, connection, fileChanges);
+
                 ConnectOnBroker();
             }
             catch (MySqlException ex)
@@ -48,6 +49,26 @@ namespace MQTTClient2
             }
         }
 
+        private static void setupFileChanges()
+        {
+            switch (Configs.FileChangeDetMethod)
+            {
+                case "MANUAL":
+                    fileChanges = new FileChangesManual(f);
+                    break;
+                case "EVENT":
+                    fileChanges = new FileChangesEvent(f);
+                    break;
+                default:
+                    throw new ArgumentException("Not recognized... ");
+            }
+
+            fileChanges.onChange(poruka =>
+            {
+                mqttClient.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+            });
+        }
+
         private static void ConnectOnBroker()
         {
             while (true)
@@ -58,6 +79,7 @@ namespace MQTTClient2
                     {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");
+                        
                         subServis.Subscribe();
                     }
                 }
@@ -67,15 +89,6 @@ namespace MQTTClient2
                 }
 
                 Thread.Sleep(5000);
-            }
-        }
-
-        private static void CloseExsistingReader()
-        {
-            if(reader != null && !reader.IsClosed)
-            {
-                reader.Close();
-                reader.Dispose();
             }
         }
     }

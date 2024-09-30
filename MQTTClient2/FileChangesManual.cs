@@ -13,19 +13,21 @@ namespace MQTTClient2
     {
         private Thread t;
         private IFiles file;
-        private MqttClient mqttClient;
+        private Action<string> action;
         private DateTime lastWriteTime;
 
         public FileChangesManual(IFiles f)
         {
             this.file = f;
-            t = new Thread(() => onChange(mqttClient));
+            t = new Thread(() => StartMonitoring());
             t.Start();
         }
 
-        public void onChange(MqttClient client)
+        public void onChange(Action<string> action)
         {
-            this.mqttClient = client;
+            this.action = action;
+        }
+        public void StartMonitoring() { 
             if (File.Exists(Configs.File))
             {
                 lastWriteTime = File.GetLastWriteTime(Configs.File);
@@ -49,7 +51,8 @@ namespace MQTTClient2
                     {
                         lastWriteTime = currentWriteTime;
                         poruka = file.Change(newInfo, oldInfo);
-                        mqttClient.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                        /*mqttClient.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));*/
+                        action.Invoke(poruka);
                     }
 
                     oldInfo = newInfo;

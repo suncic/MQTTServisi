@@ -21,7 +21,7 @@ namespace MQTTClient2
             this.file = f;
         }
 
-        public void onChange(MqttClient client)
+        public void onChange(Action<string> action)
         {
             fileSystemWatcher.Path = Path.GetDirectoryName(Configs.File);
             fileSystemWatcher.Filter = Path.GetFileName(Configs.File);
@@ -31,8 +31,10 @@ namespace MQTTClient2
             fileSystemWatcher.Changed += (sender, e) =>
             {
                 StringBuilder fileInfo = file.GetText();
+                
                 string poruka = file.Change(fileInfo, oldInfo);
-                client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                action.Invoke(poruka);
+                /*client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));*/
             };
             fileSystemWatcher.EnableRaisingEvents = true;
         }

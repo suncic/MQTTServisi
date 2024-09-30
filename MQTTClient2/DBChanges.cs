@@ -16,55 +16,53 @@ namespace MQTTClient2
         private Thread t;
         private MqttClient client;
         private int lastId = 0;
-        private MySqlDataReader reader;
+
+        private static readonly object _lock = new object();
+
         public DBChanges(MySqlConnection conn, MqttClient client)
         {
             this.conn = conn;
-            t = new Thread(() => onChange(client, reader));
+            this.client = client;
+            t = new Thread(onChange);
             t.Start();
         }
 
-        public void onChange(MqttClient client, MySqlDataReader reader)
+        public void onChange()
         {
-            this.client = client;
-            this.reader = reader;
             while (true)
             {
-                string sql = "select * from person where PersonId > @lastId";
-
-                using (var command = new MySqlCommand(sql, conn))
+                lock (_lock)
                 {
-                    command.Parameters.AddWithValue("lastId", lastId);
-                    try
+
+                    string sql = "select * from person where PersonId > @lastId";
+                    using (var command = new MySqlCommand(sql, conn))
                     {
-                        reader = command.ExecuteReader();
-
-                        while (reader.Read())
+                        command.Parameters.AddWithValue("lastId", lastId);
+                        try
                         {
-                            int newId = reader.GetInt32("PersonID");
-                            string name = reader.GetString("PesonName");
-                            string surname = reader.GetString("PersonSurname");
-                            int age = reader.GetInt32("PersonCol");
-                            string poruka = name + " " + surname + ", " + age;
-                            client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+                            using (var reader = command.ExecuteReader())
+                            {
 
-                            lastId = newId;
+                                while (reader.Read())
+                                {
+                                    int newId = reader.GetInt32("PersonID");
+                                    string name = reader.GetString("PersonName");
+                                    string surname = reader.GetString("PersonSurname");
+                                    int age = reader.GetInt32("PersonAge");
+                                    string poruka = name + " " + surname + ", " + age;
+                                    client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+
+                                    lastId = newId;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log4net.log.Error(ex.Message);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Log4net.log.Error(ex.Message);
-                    }
-                    finally
-                    {
-                        if (reader != null && !reader.IsClosed)
-                        {
-                            reader.Close();
-                            reader.Dispose();
-                        }
-                    }
-                    
                 }
+
                 Thread.Sleep(5000);
             }
         }

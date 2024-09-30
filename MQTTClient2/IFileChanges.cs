@@ -9,6 +9,6 @@ namespace MQTTClient2
 {
     internal interface IFileChanges
     {
-        void onChange(MqttClient client);
+        void onChange(Action<string> action);
     }
 }
