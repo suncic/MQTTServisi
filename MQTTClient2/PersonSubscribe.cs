@@ -10,7 +10,6 @@ namespace MQTTClient2
 {
     internal class PersonSubscribe : IPersonSubscribe
     {
-        //ono sto je objavljeno se salje na dodavanje u bazu
         private MySqlConnection conn;
 
         public PersonSubscribe(MySqlConnection conn)
@@ -20,7 +19,7 @@ namespace MQTTClient2
 
         public int AddInDatabase(String poruka)
         {
-            if (RegexMessage(poruka))
+            if (Regex.IsMatch(poruka, @Configs.Pattern))
             {
                 string[] tokens = poruka.Split(' ');
                 string sql = "insert into person(PersonName, PersonSurname, PersonAge) value('" + tokens[0] + "','" + tokens[1] + "'," + int.Parse(tokens[2]) + ")";
@@ -36,14 +35,6 @@ namespace MQTTClient2
             }
 
             return -1;
-        }
-
-        private bool RegexMessage(string poruka)
-        {
-            string pattern = @"\w+\s\w+\s\d+";
-
-            bool isMatch = Regex.IsMatch(poruka, pattern);
-            return isMatch;
         }
     }
 }

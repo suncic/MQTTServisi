@@ -30,11 +30,11 @@ namespace MQTTClient2
         static void Main(string[] args)
         {
             try
-            {
-                setupFileChanges();
-
+            {   
                 connection.Open();
                 Log4net.log.Info("Connected on database");
+
+                setupFileChanges();
                 IPubService pubServis = new PubServis(mqttClient, f, connection, fileChanges);
 
                 ConnectOnBroker();

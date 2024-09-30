@@ -34,7 +34,6 @@ namespace MQTTClient2
                 
                 string poruka = file.Change(fileInfo, oldInfo);
                 action.Invoke(poruka);
-                /*client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));*/
             };
             fileSystemWatcher.EnableRaisingEvents = true;
         }

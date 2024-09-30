@@ -32,6 +32,8 @@ namespace MQTTClient2
 
         public static string ConnString { get; } = "";
 
+        public static string Col { get; } = ""; 
+        
         public static string Col1 { get; } = "";
 
         public static string Col2 { get; } = "";
@@ -39,6 +41,8 @@ namespace MQTTClient2
         public static string Col3 { get; } = "";
 
         public static string Pattern { get; } = "";
+
+        public static string FileChangeDetMethod { get; } = "";
 
         static Configs()
         {
@@ -121,8 +125,17 @@ namespace MQTTClient2
             catch(Exception ex)
             {
                 log.Error(ex.Message);
-            } 
-            
+            }
+
+            try
+            {
+                Col = ConfigurationManager.AppSettings["col"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
             try
             {
                 Col1 = ConfigurationManager.AppSettings["col1"];
@@ -137,6 +150,34 @@ namespace MQTTClient2
                 Col2 = ConfigurationManager.AppSettings["col2"];
             }
             catch(Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
+                Col3 = ConfigurationManager.AppSettings["col3"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
+                Pattern = ConfigurationManager.AppSettings["pattern"];
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+            try
+            {
+
+                FileChangeDetMethod = ConfigurationManager.AppSettings["FileChangeDetMethod"];
+            }
+            catch (Exception ex)
             {
                 log.Error(ex.Message);
             }

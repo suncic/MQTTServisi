@@ -45,10 +45,10 @@ namespace MQTTClient2
 
                                 while (reader.Read())
                                 {
-                                    int newId = reader.GetInt32("PersonID");
-                                    string name = reader.GetString("PersonName");
-                                    string surname = reader.GetString("PersonSurname");
-                                    int age = reader.GetInt32("PersonAge");
+                                    int newId = reader.GetInt32(Configs.Col);
+                                    string name = reader.GetString(Configs.Col1);
+                                    string surname = reader.GetString(Configs.Col2);
+                                    int age = reader.GetInt32(Configs.Col3);
                                     string poruka = name + " " + surname + ", " + age;
                                     client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
 

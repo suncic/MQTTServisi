@@ -33,7 +33,6 @@ namespace MQTTClient2
             this.file = f;
             this.conn = con;
             this.fileChanges = fileChanges;
-            //this.fileChanges = new FileChangesEvent(file);
             dbChanges = new DBChanges(con, client);
             this.t1 = new Thread(Publish);
             t1.Start();
