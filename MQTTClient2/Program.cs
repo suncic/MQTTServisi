@@ -13,6 +13,7 @@ using uPLibrary.Networking.M2Mqtt.Exceptions;
 using static uPLibrary.Networking.M2Mqtt.MqttClient;
 using static System.Net.WebRequestMethods;
 using System.Threading;
+using MySql.Data.MySqlClient;
 
 namespace MQTTClient2
 {
@@ -20,20 +21,65 @@ namespace MQTTClient2
     {
         private static MqttClient mqttClient = new MqttClient(Configs.Broker, Configs.Port, false, null,
                 null, MqttSslProtocols.TLSv1_2);
+        private static MySqlConnection connection = new MySqlConnection(Configs.ConnString);
         private static IFiles f = new Files();
-        private static IPubService pubServis = new PubServis(mqttClient, f);
-        private static SubServis subServis = new SubServis(mqttClient);
+        private static IFileChanges fileChanges;
+        private static SubServis subServis = new SubServis(mqttClient, connection);
 
 
         static void Main(string[] args)
+        {
+            try
+            {
+                setupFileChanges();
+
+                connection.Open();
+                Log4net.log.Info("Connected on database");
+                IPubService pubServis = new PubServis(mqttClient, f, connection, fileChanges);
+
+                ConnectOnBroker();
+            }
+            catch (MySqlException ex)
+            {
+                Log4net.log.Error(ex.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        private static void setupFileChanges()
+        {
+            switch (Configs.FileChangeDetMethod)
+            {
+                case "MANUAL":
+                    fileChanges = new FileChangesManual(f);
+                    break;
+                case "EVENT":
+                    fileChanges = new FileChangesEvent(f);
+                    break;
+                default:
+                    throw new ArgumentException("Not recognized... ");
+            }
+
+            fileChanges.onChange(poruka =>
+            {
+                mqttClient.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(poruka));
+            });
+        }
+
+        private static void ConnectOnBroker()
         {
             while (true)
             {
                 try
                 {
-                    if (!mqttClient.IsConnected) {
+                    if (!mqttClient.IsConnected)
+                    {
                         mqttClient.Connect(Guid.NewGuid().ToString(), Configs.Username, Configs.Password, false, 60);
                         Log4net.log.Info("Connected successfully!");
+                        
                         subServis.Subscribe();
                     }
                 }
@@ -44,7 +90,6 @@ namespace MQTTClient2
 
                 Thread.Sleep(5000);
             }
-            
         }
     }
 }

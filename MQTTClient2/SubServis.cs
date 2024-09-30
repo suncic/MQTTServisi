@@ -1,5 +1,6 @@
 ﻿using log4net;
 using Microsoft.SqlServer.Server;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,6 +21,9 @@ namespace MQTTClient2
     {
         private MqttClient client;
         private DateTime lastMessage;
+        private MySqlConnection con;
+        private PersonSubscribe pSub;
+
         public bool isSubscribed { get; set; } = false;
 
         public DateTime LastMessage
@@ -28,9 +32,11 @@ namespace MQTTClient2
             set => lastMessage = value; 
         }
 
-        public SubServis(MqttClient client) 
+        public SubServis(MqttClient client, MySqlConnection con) 
         {
             this.client = client;
+            this.con = con;
+            pSub = new PersonSubscribe(con);
         }
 
         public void Subscribe()
@@ -52,6 +58,16 @@ namespace MQTTClient2
             {
                 string imef = Configs.RootFile + LastMessage.ToString("yyyy-MM-dd_HH-mm-ss");
                 f.WriteText(poruka, imef);
+                int i = pSub.AddInDatabase(poruka);
+
+                if (i <= -1)
+                {
+                    Log4net.log.Warn("Nije dodat ni jedan red");
+                }
+                else
+                {
+                    Log4net.log.Info("Dodato je " + i + " redova");
+                }
 
                 Log4net.log.Info("Objavljena je: " + poruka + " u vreme " + LastMessage.TimeOfDay);
             }

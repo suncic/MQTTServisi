@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +8,8 @@ using uPLibrary.Networking.M2Mqtt;
 
 namespace MQTTClient2
 {
-    internal interface IFileChanges
+    internal interface IDBChanges
     {
-        void onChange(Action<string> action);
+        void onChange();
     }
 }

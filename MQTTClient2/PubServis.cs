@@ -11,6 +11,8 @@ using System.IO;
 using System.Web.Hosting;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
+using MySql.Data.MySqlClient;
+using System.Runtime.Remoting.Messaging;
 
 namespace MQTTClient2
 {
@@ -20,26 +22,31 @@ namespace MQTTClient2
         private Thread t1 = null;
         private IFiles file;
         private IFileChanges fileChanges;
+        private MySqlConnection conn;
+        private DBChanges dbChanges;
 
         private static StringBuilder oldInfo = new StringBuilder();
 
-        public PubServis(MqttClient client, IFiles f)
+        public PubServis(MqttClient client, IFiles f, MySqlConnection con, IFileChanges fileChanges)
         {
             this.client = client;
             this.file = f;
-            this.fileChanges = new FileChangesManual(file);
+            this.conn = con;
+            this.fileChanges = fileChanges;
             //this.fileChanges = new FileChangesEvent(file);
+            dbChanges = new DBChanges(con, client);
             this.t1 = new Thread(Publish);
             t1.Start();
         }
 
         public void Publish()
         {
-            StringBuilder sb = file.GetText();
+            /*StringBuilder sb = file.GetText();
             client.Publish(Configs.Topic1, Encoding.UTF8.GetBytes(sb.ToString()));
-            Thread.Sleep(1000);
+            Thread.Sleep(1000);*/
 
-            fileChanges.onChange(client);
+            //fileChanges.onChange(client);
+            dbChanges.onChange();
         }
     }
 }
